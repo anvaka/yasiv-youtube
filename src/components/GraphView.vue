@@ -16,16 +16,19 @@
             :xlink:href='node.data.imageUrl'
             :x='node.pos.x - 30' :y='node.pos.y - 22.5' v-for='node in nodes'/>
         </g>
-        <g>
-          <text text-anchor='middle' :x='tooltip.x' :y='tooltip.y' v-if='tooltip.visible'>{{tooltip.text}}</text>
-        </g>
       </g>
       <defs>
         <marker id='Triangle' viewBox='0 0 10 10' refX='5' refY='5' markerUnits='strokeWidth' markerWidth='10' markerHeight='5' orient='auto'>
-          <path d='M 0 0 L 10 5 L 0 10 z'></path>
+          <path d='M 0 0 L 10 5 L 0 10 z' fill='#999'></path>
         </marker>
       </defs>
     </svg>
+    <div class='tooltip' v-if='tooltip.visible' :style='{
+       left: tooltip.x + "px",
+       top: tooltip.y + "px"
+      }'>
+      {{tooltip.text}}
+    </div>
   </div>
 </template>
 
@@ -79,8 +82,7 @@ export default {
       forAll(this.$refs.scene, `path[data-from="${nodeId}"], path[data-to="${nodeId}"]`, addClass('hl'));
 
       const { title } = this.graph.getNode(nodeId).data;
-      const position = this.layout.getNodePosition(nodeId);
-      this.showTooltip(position, title);
+      this.showTooltip(e.target, title);
     },
 
     handleMouseClick(e) {
@@ -88,11 +90,12 @@ export default {
       if (nodeId) this.$emit('selected', nodeId);
     },
 
-    showTooltip(pos, text) {
+    showTooltip(el, text) {
+      const rect = el.getBoundingClientRect();
       const { tooltip } = this;
       tooltip.text = text;
-      tooltip.x = pos.x;
-      tooltip.y = pos.y - 42 / 2;
+      tooltip.x = rect.left + rect.width / 2;
+      tooltip.y = rect.top - 42 / 2;
       tooltip.visible = true;
     },
 
@@ -248,5 +251,12 @@ path.hl {
 }
 .video-thumbnail {
   cursor: pointer;
+}
+.tooltip {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.8);
+  pointer-events: none;
+  transform: translate(-50%, 0);
+  white-space: nowrap;
 }
 </style>

@@ -7,7 +7,7 @@ const MAX_LEVELS = 1;
 const similarPerNode = 10;
 const similarPerRequest = 15;
 
-export function buildGraphForSearchTerm(searchTerm) {
+export function buildYouTubeVideoGraph(searchTerm) {
   let root;
   const graph = createGraph({ uniqueLinkIds: false });
   const progress = new ProgressToken();

@@ -1,3 +1,6 @@
+/**
+ * Super simple ajax client
+ */
 export default function get(url) {
   return new Promise((resolve, reject) => {
     const oReq = new XMLHttpRequest();

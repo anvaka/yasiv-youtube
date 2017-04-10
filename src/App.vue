@@ -6,12 +6,12 @@
         <input type='submit' id='startSearch' title='Start visualization' value='Show Graph' />
     </form>
 
-    <div id='log'></div>
+    <div class='log-message' v-if='logMessage'>{{logMessage}}</div>
     <video-preview :videoId='selectedVideo' @close='closeVideo'></video-preview>
     <div class='footer'>
         <a @click.prevent='showAbout = true' class='about-link'>About</a>
     </div>
-    <div id='copyText'>(C) Andrei Kashcha</div>
+    <div id='copyText'>Made with <span class='heart'>♥</span> by Andrei Kashcha</div>
 
 
     <div id='about' v-if='showAbout'>
@@ -38,8 +38,7 @@ import queryState from 'query-state';
 import GraphView from './components/GraphView.vue';
 import VideoPreview from './components/VideoPreview.vue';
 
-import { getVideoIdFromUrl } from './lib/utils.js';
-import { buildGraphForSearchTerm } from './lib/graphBuilder.js';
+import { buildYouTubeVideoGraph } from './lib/graphBuilder.js';
 
 const qs = queryState();
 
@@ -50,7 +49,7 @@ export default {
 
     return {
       request: null,
-      logMessage: '',
+      logMessage: 'Hello',
       searchString,
       showAbout: searchString.length === 0,
       selectedVideo: null,
@@ -98,7 +97,10 @@ export default {
       }
       this.showAbout = false;
 
-      this.request = buildGraphForSearchTerm(q);
+      this.request = buildYouTubeVideoGraph(q);
+      this.request.progress.onProgress((msg) => {
+        this.logMessage = msg;
+      })
     }
   },
 
@@ -158,7 +160,7 @@ a:hover {
   height: 100%;
 }
 #searchForm {
-  padding: 14px;
+  padding: 0 14px;
   position: absolute;
   white-space: nowrap;
   background: white;
@@ -169,7 +171,7 @@ a:hover {
   display: flex;
 }
 #searchString {
-  height: 28px;
+  height: 56px;
   padding-left: 10px;
   font-size: 18px;
   outline: none;
@@ -239,6 +241,16 @@ a:hover {
   float: right;
 }
 
+.log-message {
+  position: absolute;
+  bottom: 42px;
+  width: 100%;
+  text-align: center;
+  color: #ff4081;
+  padding: 4px;
+  background: rgba(255, 255, 255, 0.8);
+}
+
 @media only screen and (max-width: 600px) {
   #searchForm {
     width: 100%;
@@ -265,5 +277,8 @@ a:hover {
     padding-right: 14px;
     justify-content: flex-end;
   }
+}
+.heart {
+  color: #ff4081;
 }
 </style>

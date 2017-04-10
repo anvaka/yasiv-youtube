@@ -24,7 +24,7 @@ import createDrag from '../lib/drag.js';
 
 export default {
   name: 'Window',
-  props: ['title', 'width', 'height', 'x', 'y', 'noDrag'],
+  props: ['title', 'width', 'height', 'x', 'y'],
   data() {
     // 'c' stands for 'current'
     return {
@@ -43,17 +43,17 @@ export default {
       return createDrag(this.$refs[mover.name], (dx, dy) => {
         const pos = mover.update(this, dx, dy);
         if (pos.cX !== undefined) {
-          if (pos.cX >= 0) this.cX = pos.cX;
+          this.cX = pos.cX;
         }
         if (pos.cY !== undefined) {
           if (pos.cY >= 0) this.cY = pos.cY;
         }
         // TODO: This should not be really hardcoded.
         if (pos.cWidth !== undefined) {
-          if (pos.cWidth >= 300) this.cWidth = pos.cWidth;
+          this.cWidth = pos.cWidth;
         }
         if (pos.cHeight !== undefined) {
-          if (pos.cHeight >= 240) this.cHeight = pos.cHeight;
+          if (pos.cHeight >= 1) this.cHeight = pos.cHeight;
         }
         this.moved = true;
       });
@@ -168,7 +168,11 @@ function initDefaultPos(el, pos) {
   pos.cX = parsePx(style.left);
   pos.cY = parsePx(style.top);
   pos.cHeight = parsePx(style.height);
-  pos.cWidth = parsePx(style.width);
+  if (style.width === '100%') {
+    pos.cWidth = el.parentElement.clientWidth;
+  } else {
+    pos.cWidth = parsePx(style.width);
+  }
 }
 
 function parsePx(str) {

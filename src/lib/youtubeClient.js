@@ -43,12 +43,6 @@ export function searchVideos(query, callback, error, extra) {
   return makeRequest(args, callback, error);
 }
 
-export function searchItemById(id, callback, error) {
-  return makeRequestToOrigin(origin + 'videos', {
-    part: 'snippet'
-  }, callback, error);
-}
-
 export function findRelatedVideos(video, maxResults, callback, error) {
   return makeRequest({
     part: 'snippet',
