@@ -164,7 +164,7 @@ function createMovers() {
 }
 
 function initDefaultPos(el, pos) {
-  const style = window.getComputedStyle(el)
+  const style = window.getComputedStyle(el);
   pos.cX = parsePx(style.left);
   pos.cY = parsePx(style.top);
   pos.cHeight = parsePx(style.height);

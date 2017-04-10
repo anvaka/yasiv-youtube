@@ -50,8 +50,7 @@ export default {
         width: '100%',
         videoId,
         events: {
-          // onStateChange : onPlayerStateChange,
-          onReady: (e) => {
+          onReady: () => {
             const data = this.player.getVideoData();
             this.title = data.title;
             this.player.playVideo();
