@@ -17,7 +17,7 @@
     <div id='about' v-if='showAbout'>
         <h2>About Yasiv</h2>
         <div style='text-align: left'>
-            <p>This web site shows related videos from YouTube.</p>
+            <p>This web site shows related videos from the YouTube.</p>
             <p>Enter a search term in the box above, and press the "Show Graph" button.</p>
             <p>Each icon is a YouTube video. Each connection means that videos are related (according to YouTube).</p>
             <p><a href='https://twitter.com/anvaka'>Andrei Kashcha</a></p>
@@ -26,9 +26,9 @@
             <li><a href="https://github.com/anvaka/yasiv-youtube">GitHub</a></li>
             <li><a href="https://twitter.com/#!/yasivcom">Twitter</a></li>
             <li><a href="http://www.facebook.com/pages/Yasiv/234739739945193">Facebook</a></li>
-            <li><a href='mailto:anvaka@yasiv.com'>Contact</a></li>
+            <li><a href='mailto:anvaka@yasiv.com'>Email</a></li>
         </ul>
-        <a href='#' @click.prevent='showAbout = false'  class='primary-action close-about' title='Close this message'>Close</a>
+        <a href='#' @click.prevent='showAbout = false'  class='close-about' title='Close this message'>Close</a>
     </div>
   </div>
 </template>
@@ -100,7 +100,7 @@ export default {
       this.request = buildYouTubeVideoGraph(q);
       this.request.progress.onProgress((msg) => {
         this.logMessage = msg;
-      })
+      });
     }
   },
 
@@ -239,6 +239,8 @@ a:hover {
 }
 .close-about {
   float: right;
+  margin-right: 14px;
+  font-size: 12px;
 }
 
 .log-message {
