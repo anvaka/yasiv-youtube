@@ -7,24 +7,9 @@
     </form>
 
     <div id='log'></div>
-    <video-preview :videoId='selectedVideo'></video-preview>
-    <div id='footer'>
-        <div id='footerLinks'>
-            <ul style='text-align: center;'>
-                <li>
-                    <a id='aboutButton' href="">About</a>
-                </li>
-                <li>
-                    <a href="https://twitter.com/#!/yasivcom">Twitter</a>
-                </li>
-                <li>
-                    <a href="http://www.facebook.com/pages/Yasiv/234739739945193">Facebook</a>
-                </li>
-                <li>
-                    <a href='mailto:anvaka@yasiv.com'>Contact</a>
-                </li>
-            </ul>
-        </div>
+    <video-preview :videoId='selectedVideo' @close='closeVideo'></video-preview>
+    <div class='footer'>
+        <a @click.prevent='showAbout = true' class='about-link'>About</a>
     </div>
     <div id='copyText'>(C) 2012 Andrei Kashcha</div>
 
@@ -33,10 +18,17 @@
         <h2>About Yasiv</h2>
         <div style='text-align: left'>
             <p>This web site shows related videos from YouTube.</p>
-            <p>Just enter a search term in the box above, and press the "Show Graph" button.</p>
+            <p>Enter a search term in the box above, and press the "Show Graph" button.</p>
             <p>Each icon is a YouTube video. Each connection means that videos are related (according to YouTube).</p>
             <p><a href='https://twitter.com/anvaka'>Andrei Kashcha</a></p>
         </div>
+        <ul>
+            <li><a href="https://github.com/anvaka/yasiv-youtube">GitHub</a></li>
+            <li><a href="https://twitter.com/#!/yasivcom">Twitter</a></li>
+            <li><a href="http://www.facebook.com/pages/Yasiv/234739739945193">Facebook</a></li>
+            <li><a href='mailto:anvaka@yasiv.com'>Contact</a></li>
+        </ul>
+        <a href='#' @click.prevent='showAbout = false'  class='primary-action close-about' title='Close this message'>Close</a>
     </div>
   </div>
 </template>
@@ -75,10 +67,13 @@ export default {
       if (this.request) {
         return this.request.graph;
       }
-    }
+    },
   },
 
   methods: {
+    closeVideo() {
+      this.selectedVideo = null;
+    },
     searchFormSubmitHandler() {
       qs.set({ q: this.searchString });
       this.startSearch();
@@ -101,6 +96,7 @@ export default {
         this.request.progress.cancel();
         // TODO: Clean the scene.
       }
+      this.showAbout = false;
 
       this.request = buildGraphForSearchTerm(q);
     }
@@ -135,6 +131,16 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+.window {
+  left: 8px;
+  top: 64px;
+  width: 420px;
+  height: 290px; /* 248 - is golden ratio of 420 + 42px for the header */
+  box-shadow: 0 2px 4px rgba(0,0,0,.2), 0 -1px 0 rgba(0,0,0,.02);
+}
+a.primary-action {
+  color: #ff4081;
+}
 a {
   color: #4183C4;
   text-decoration: none;
@@ -151,22 +157,27 @@ a:hover {
   height: 100%;
 }
 #searchForm {
-  margin: 14px;
+  padding: 14px;
   position: absolute;
-  max-width: 400px;
   white-space: nowrap;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,.2), 0 -1px 0 rgba(0,0,0,.02);
+  top: 8px;
+  left: 8px;
+  width: 420px;
+  display: flex;
 }
 #searchString {
-  width: 300px;
   height: 28px;
   padding-left: 10px;
-  font-size: 14px;
+  font-size: 18px;
   outline: none;
-  border: 1px solid #999;
+  border: none;
+  flex: 1;
 }
 
 #searchString:focus {
-  border: 1px solid #4183C4;
+  border: none;
 }
 
 #startSearch {
@@ -193,25 +204,15 @@ a:hover {
     height: 28px;
     color : white;
 }
-#footer {
+
+.footer {
   position: absolute;
-  bottom : 0px;
-  left : 50%;
-  margin-left: -136px;
-  margin-bottom: 5px;
-  font-size: 14px;
+  width: 100%;
+  bottom : 9px;
+  display: flex;
+  justify-content: center;
 }
 
-#footerLinks ul {
-  margin-top: 0px;
-  margin-bottom: 3px;
-  padding-left: 0px;
-}
-#footerLinks ul li {
-  display: inline;
-  margin-right: 10px;
-  padding-right: 9px;
-}
 #copyText {
   position: absolute;
   left: 10px;
@@ -219,11 +220,49 @@ a:hover {
   font-size: 9px;
   color: #999;
 }
+
 #about {
   position: absolute;
-  left: 7px;
+  left: 8px;
   padding: 14px;
-  top: 50px;
-  max-width: 400px;
+  top: 64px;
+  width: 420px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,.2), 0 -1px 0 rgba(0,0,0,.02);
+}
+.about-link {
+  background: rgba(255, 255, 255, 0.8);
+  padding: 0 14px;
+}
+.close-about {
+  float: right;
+}
+
+@media only screen and (max-width: 600px) {
+  #searchForm {
+    width: 100%;
+    top: 0;
+    left: 0;
+  }
+  .window {
+    left: 0;
+    top: 56px;
+    height: 35vh;
+    width: 100%;
+  }
+  #searchString {
+    font-size: 14px;
+  }
+
+  #about {
+    left: 0;
+    top: 56px;
+    width: 100%;
+  }
+
+  .footer {
+    padding-right: 14px;
+    justify-content: flex-end;
+  }
 }
 </style>

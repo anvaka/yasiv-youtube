@@ -33,6 +33,7 @@
 import panZoom from 'panzoom';
 import createLayout from 'ngraph.forcelayout';
 import { getFromTo } from '../lib/geom.js';
+import clap from '../lib/clap.js';
 
 export default {
   name: 'GraphView',
@@ -55,11 +56,7 @@ export default {
         this.disposeGraph();
       }
 
-      if (!newGraph) {
-        return;
-      }
-
-      this.initializeGraph();
+      this.initializeGraph(newGraph);
     }
   },
 
@@ -101,6 +98,7 @@ export default {
 
     handleMouseLeave() {
       this.clearHighligh();
+      this.tooltip.visible = false;
     },
 
     clearHighligh() {
@@ -165,11 +163,12 @@ export default {
       // TODO: This should be disposed properly
       scene.addEventListener('mouseenter', this.handleMouseEnter.bind(this), true);
       scene.addEventListener('mouseleave', this.handleMouseLeave.bind(this), true);
-      // TODO: touch?
-      scene.addEventListener('click', this.handleMouseClick.bind(this), true);
+      this.clapDispose = clap(scene, this.handleMouseClick.bind(this), true);
     },
 
     initializeGraph(newGraph) {
+      if (!newGraph) return;
+
       this.layout = createLayout(newGraph, {
         springLength: 80,
         springCoeff: 0.0004,
@@ -212,6 +211,9 @@ export default {
       this.zoomHandle.dispose();
     }
     this.disposeGraph();
+    if (this.clapDispose) {
+      this.clapDispose();
+    }
   }
 };
 
@@ -219,7 +221,7 @@ function getNodeIdFromDOM(el) {
   const isNode = (el && el.classList.contains('video-thumbnail'));
   if (!isNode) return;
 
-  return el.getAttribute('data-id')
+  return el.getAttribute('data-id');
 }
 
 function forAll(scene, query, action) {
@@ -241,6 +243,10 @@ svg {
   height: 100%;
 }
 path.hl {
-  stroke: orange;
+  stroke: RGB(51, 182, 121);
+  stroke-width: 2px;
+}
+.video-thumbnail {
+  cursor: pointer;
 }
 </style>

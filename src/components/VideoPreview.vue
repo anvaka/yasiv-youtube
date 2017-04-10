@@ -1,40 +1,67 @@
 <template>
-  <div id='preview' v-if='videoId'>
-    <table>
-        <tbody>
-            <tr>
-              <td>
-                <div id='videoHeader' class='subtitle'>Video Preview</div>
-                <a class="closeVideo" title="Close">close</a>
-              </td>
-            </tr>
-            <tr>
-              <td height="100%">
-              <div id='videoContent'>
-                <div ref='player'></div>
-              </div>
-              </td>
-            </tr>
-            <tr>
-                <td>
-                <div id='status'>
-                    <span id='repeatMode'></span>
-                    <span id='viewsCount'></span>
-                </div>
-                </td>
-            </tr>
-        </tbody>
-    </table>
-  </div>
+  <window :title='title' v-show='videoId' @close='closeVideo'>
+    <div id='player'></div>
+  </window>
 </template>
 
 <script>
+import Window from './Window.vue';
+
+/* globals YT */
 export default {
   name: 'VideoPreview',
   props: ['videoId'],
   mounted() {
-    // if (this.videoId) {
-    // }
+    if (this.videoId) this.play(this.videoId);
+  },
+  data() {
+    return {
+      title: 'Video Preview',
+    };
+  },
+
+  components: {
+    Window
+  },
+
+  watch: {
+    videoId(newVideoId) {
+      this.play(newVideoId);
+    }
+  },
+
+  methods: {
+    closeVideo() {
+      this.$emit('close');
+    },
+
+    play(videoId) {
+      if (this.player) {
+        this.player.destroy();
+        this.player = null;
+      }
+
+      if (!videoId) {
+        return;
+      }
+
+      this.player = new YT.Player('player', {
+        height: '100%',
+        width: '100%',
+        videoId,
+        events: {
+          // onStateChange : onPlayerStateChange,
+          onReady: (e) => {
+            const data = this.player.getVideoData();
+            this.title = data.title;
+            this.player.playVideo();
+          },
+          // onError : () => { onPlayerError(); }
+        }
+      });
+    }
   }
-}
+};
 </script>
+<style>
+</style>
