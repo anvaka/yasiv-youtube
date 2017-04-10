@@ -11,7 +11,7 @@
     <div class='footer'>
         <a @click.prevent='showAbout = true' class='about-link'>About</a>
     </div>
-    <div id='copyText'>(C) 2012 Andrei Kashcha</div>
+    <div id='copyText'>(C) Andrei Kashcha</div>
 
 
     <div id='about' v-if='showAbout'>
@@ -144,6 +144,7 @@ a.primary-action {
 a {
   color: #4183C4;
   text-decoration: none;
+  cursor: pointer;
 }
 a:hover {
   color: #ff4081;
