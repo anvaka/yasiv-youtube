@@ -1,3 +1,6 @@
+/**
+ * Super simple YouTube ajax client
+ */
 import httpGet from './restClient.js';
 
 const key = 'AIzaSyAb3ea-42-gpQf0-p9XdHbY30jI4ntqPNI';

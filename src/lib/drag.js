@@ -1,5 +1,14 @@
+/**
+ * This is a simple dragging listener. It supports touch devices, and works
+ * even when iframes are present on the page
+ */
 const preventTextSelection = createTextSelectionInterceptor();
 
+/**
+ * @param {DOMElement} owner that triggers dragging behavior
+ * @param {Function(dx, dy)} onDrag called when user drags an element. It receives
+ * related offsets dx, dy - by how far the element was moved compared to last time.
+ */
 export default function createDrag(owner, onDrag) {
   let overlay;
   let mouseX;

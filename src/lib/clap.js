@@ -1,6 +1,15 @@
+/**
+ * Unified click and tap (for touch devices) events handler.
+ */
 const maxSingleTouchTime = 300; // ms
 const singleTapDistanceSquared = 25; // within 5px we consider it a tap.
 
+/**
+ * @param {DOMElement} el element to which we listen
+ * @param {Function} handler event handler.
+ * @param {Boolean} capture - whether `addEventListener` should capture event (standard
+ * argument)
+ */
 export default function clap(el, handler, capture) {
   let touchStartTime;
   let startPos;

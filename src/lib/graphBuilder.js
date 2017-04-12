@@ -1,3 +1,6 @@
+/**
+ * This file builds a graph of YouTubue videos for a given search term.
+ */
 import createGraph from 'ngraph.graph';
 
 import ProgressToken from './ProgressToken.js';
@@ -19,7 +22,9 @@ export function buildYouTubeVideoGraph(searchTerm) {
   });
 
   return {
+    // The progress tells consumers about current status of the graph
     progress,
+    // The graph is updated as we discover new vides.
     graph
   };
 
@@ -39,6 +44,8 @@ export function buildYouTubeVideoGraph(searchTerm) {
       findRelatedVideos(root, 10, (r) => {
         onRelatedToRootFound(r, progress);
       }, () => {
+        // TODO: this is error handling code. Could probably provide better
+        // reporting
         progress.complete('Could not find related videos');
       });
     } else {

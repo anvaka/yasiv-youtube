@@ -1,3 +1,7 @@
+/**
+ * Finds a start and the end of an edge, given that the start/end nodes
+ * are rectangles.
+ */
 import intersect from 'gintersect';
 
 const nodeSize = {
@@ -6,8 +10,8 @@ const nodeSize = {
 };
 
 export function getFromTo(edge) {
-  const toPos = edge.pos.to;
-  const fromPos = edge.pos.from;
+  const toPos = edge.to;
+  const fromPos = edge.from;
 
   const from = intersectRect(
       fromPos.x - nodeSize.width / 2, // left
