@@ -7,7 +7,7 @@
     </form>
 
     <div class='log-message' v-if='logMessage'>{{logMessage}}</div>
-    <video-preview :videoId='selectedVideo' @close='closeVideo'></video-preview>
+    <video-preview :videoId='selectedVideo' @close='closeVideo' @ended='playNext'></video-preview>
     <div class='footer'>
         <a @click.prevent='showAbout = true' class='about-link'>About</a>
     </div>
@@ -73,6 +73,38 @@ export default {
     closeVideo() {
       this.selectedVideo = null;
     },
+    playNext(endedVideoId) {
+      this.lastPlaySession.add(endedVideoId);
+      const graph = this.request.graph;
+      if (!graph) return;
+
+      let nextVideoId;
+
+      graph.forEachLinkedNode(endedVideoId, (linkedNode) => {
+        if (!this.lastPlaySession.has(linkedNode.id)) {
+          nextVideoId = linkedNode.id;
+          return true; // no need to iterate more
+        }
+      }, /* enumerateOutBoundOnly = */ true
+      );
+
+      if (nextVideoId) {
+        this.selectedVideo = nextVideoId;
+        return;
+      }
+      // otherwise, let's pick it random TODO: This could be improved
+      graph.forEachNode(node => {
+        if (!this.lastPlaySession.has(node.id)) {
+          nextVideoId = node.id;
+          return true; // no need to iterate more
+        }
+      });
+      if (nextVideoId) {
+        this.selectedVideo = nextVideoId;
+      }
+
+      // if we get here, it means we played the entire graph. What should we do?
+    },
     searchFormSubmitHandler() {
       qs.set({ q: this.searchString });
       this.startSearch();
@@ -93,10 +125,11 @@ export default {
 
       if (this.request) {
         this.request.progress.cancel();
-        // TODO: Clean the scene.
       }
-      this.showAbout = false;
 
+      this.lastPlaySession = new Set();
+
+      this.showAbout = false;
       this.request = buildYouTubeVideoGraph(q);
       this.request.progress.onProgress((msg) => {
         this.logMessage = msg;

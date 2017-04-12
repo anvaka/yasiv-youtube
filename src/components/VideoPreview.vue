@@ -50,11 +50,17 @@ export default {
         width: '100%',
         videoId,
         events: {
+          onStateChange: (event) => {
+            if (event.data === YT.PlayerState.ENDED) {
+              this.$emit('ended', videoId);
+            }
+          },
           onReady: () => {
             const data = this.player.getVideoData();
             this.title = data.title;
             this.player.playVideo();
           },
+          // TODO: Implement this bit
           // onError : () => { onPlayerError(); }
         }
       });
