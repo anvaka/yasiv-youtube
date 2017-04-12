@@ -2,19 +2,27 @@
   <div>
     <svg>
       <g ref='scene'>
-        <g>
-          <path stroke='#999'
+        <!--
+          Note: I wish I could use commented out code. Unfortunately it move rendering
+          of the graph choppier than if it is done from native layer.
+          I have to construct/update nodes/edges using regular javascript, as we know
+          precisely when change happens and what is changed.
+        -->
+        <g ref='linksContainer'>
+          <!-- path v-for='edge in edges'
+            stroke='#999'
             :data-from='edge.fromId'
             :data-to='edge.toId'
-            :d='computeLinkPath(edge)' v-for='edge in edges'
-            marker-end='url(#Triangle)'></path>
+            :d='computeLinkPath(edge)'
+            marker-end='url(#Triangle)'></path-->
         </g>
-        <g>
-          <image width='60' height='45'
+        <g ref='nodeContainer'>
+          <!--image v-for='node in nodes'
+            width='60' height='45'
             class='video-thumbnail'
             :data-id='node.id'
             :xlink:href='node.data.imageUrl'
-            :x='node.pos.x - 30' :y='node.pos.y - 22.5' v-for='node in nodes'/>
+            :x='node.pos.x - 30' :y='node.pos.y - 22.5' /-->
         </g>
       </g>
       <defs>
@@ -35,6 +43,8 @@
 <script>
 import panZoom from 'panzoom';
 import createLayout from 'ngraph.forcelayout';
+import sivg from 'simplesvg';
+
 import { getFromTo } from '../lib/geom.js';
 import clap from '../lib/clap.js';
 
@@ -108,15 +118,6 @@ export default {
       forAll(this.$refs.scene, '.hl', removeClass('hl'));
     },
 
-    computeLinkPath(edge) {
-      const { from, to } = getFromTo(edge);
-      let data = 'M';
-
-      data += Math.round(from.x) + ',' + Math.round(from.y);
-      data += 'L' + Math.round(to.x) + ',' + Math.round(to.y);
-
-      return data;
-    },
     onGraphChanged(changes) {
       this.iterations = 0;
       changes.forEach(change => {
@@ -135,22 +136,47 @@ export default {
       const { id, data } = graphNode;
       const pos = this.layout.getNodePosition(id);
 
-      this.nodes.push({ pos, id, data });
+      const ui = sivg('image', {
+        width: '60',
+        height: '45',
+        class: 'video-thumbnail',
+        'data-id': id,
+        x: pos.x - 30,
+        y: pos.y - 22.5
+      });
+      ui.link(data.imageUrl);
+
+      this.$refs.nodeContainer.appendChild(ui);
+
+      this.nodes.push({ ui, pos, id, data });
     },
 
     addLink(graphLink) {
       const { id, fromId, toId } = graphLink;
       const pos = this.layout.getLinkPosition(id);
 
-      this.edges.push({ pos, fromId, toId });
+
+      const uiParent = this.$refs.linksContainer;
+      const ui = sivg('path', {
+        stroke: '#999',
+        'data-from': fromId,
+        'data-to': toId,
+        d: computeLinkPath(pos),
+        'marker-end': 'url(#Triangle)'
+      });
+
+      this.edges.push({ pos, fromId, toId, ui });
+
+      uiParent.appendChild(ui);
     },
 
     disposeGraph() {
       if (this.graph) {
         this.graph.off('changed', this.onGraphChanged, this);
+        disposeUI(this.nodes);
+        disposeUI(this.edges);
         this.nodes = [];
         this.edges = [];
-        this.graph = null;
       }
       if (this.layout) {
         this.layout.dispose();
@@ -179,8 +205,10 @@ export default {
         gravity: -50,
         theta: 0.5
       });
+
       this.nodes = [];
       this.edges = [];
+
       const graph = newGraph;
 
       graph.forEachNode((node) => {
@@ -191,7 +219,8 @@ export default {
         this.addLink(link);
       });
 
-      this.graph.on('changed', this.onGraphChanged, this);
+      graph.on('changed', this.onGraphChanged, this);
+
       this.boundFrame = this.frame.bind(this);
       this.frame();
     },
@@ -200,7 +229,16 @@ export default {
       if (!this.layout) return;
 
       this.layout.step();
+      this.edges.forEach(edge => {
+        edge.ui.attr('d', computeLinkPath(edge.pos));
+      });
 
+      this.nodes.forEach(node => {
+        node.ui.attr({
+          x: node.pos.x - 30,
+          y: node.pos.y - 22.5
+        });
+      });
       this.iterations += 1;
       if (this.layout.lastMove > 20 || this.iterations < 100) {
         // we assume we are note converged yet.
@@ -219,6 +257,25 @@ export default {
     }
   }
 };
+
+
+function disposeUI(uiCollection) {
+  if (!uiCollection) return;
+  uiCollection.forEach(model => {
+    const { parentElement } = model.ui;
+    if (parentElement) parentElement.removeChild(model.ui);
+  });
+}
+
+function computeLinkPath(edge) {
+  const { from, to } = getFromTo(edge);
+  let data = 'M';
+
+  data += Math.round(from.x) + ',' + Math.round(from.y);
+  data += 'L' + Math.round(to.x) + ',' + Math.round(to.y);
+
+  return data;
+}
 
 function getNodeIdFromDOM(el) {
   const isNode = (el && el.classList.contains('video-thumbnail'));
