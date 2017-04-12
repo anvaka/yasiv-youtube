@@ -139,9 +139,16 @@ export function buildYouTubeVideoGraph(searchTerm) {
   }
 
   function extractData(data) {
+    const image = data.snippet.thumbnails.medium;
+
+    const width = 60;
+    const ratio = width / image.width;
+
     return {
+      image,
+      width,
+      height: image.height * ratio,
       isPinned: data.isPinned,
-      imageUrl: data.snippet.thumbnails.medium.url,
       title: data.snippet.title
     };
   }

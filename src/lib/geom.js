@@ -5,26 +5,27 @@
 import intersect from 'gintersect';
 
 const nodeSize = {
-  width: 60,
-  height: 45
+  width: 60 * 1.2,
 };
 
-export function getFromTo(edge) {
+export function getFromTo(edge, fromHeight, toHeight) {
   const toPos = edge.to;
   const fromPos = edge.from;
+  const halfFrom = (fromHeight / 2) * 1.2;
 
   const from = intersectRect(
       fromPos.x - nodeSize.width / 2, // left
-      fromPos.y - nodeSize.height / 2, // top
+      fromPos.y - halfFrom, // top
       fromPos.x + nodeSize.width / 2, // right
-      fromPos.y + nodeSize.height / 2, // bottom
+      fromPos.y + halfFrom, // bottom
       fromPos.x, fromPos.y, toPos.x, toPos.y) || fromPos;
 
+  const halfTo = (toHeight / 2) * 1.2;
   const to = intersectRect(
       toPos.x - nodeSize.width / 2, // left
-      toPos.y - nodeSize.height / 2, // top
+      toPos.y - halfTo, // top
       toPos.x + nodeSize.width / 2, // right
-      toPos.y + nodeSize.height / 2, // bottom
+      toPos.y + halfTo, // bottom
       toPos.x, toPos.y, fromPos.x, fromPos.y) || toPos;
 
   return { from, to };

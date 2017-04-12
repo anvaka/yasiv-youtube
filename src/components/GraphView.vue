@@ -3,26 +3,23 @@
     <svg>
       <g ref='scene'>
         <!--
-          Note: I wish I could use commented out code. Unfortunately it move rendering
-          of the graph choppier than if it is done from native layer.
-          I have to construct/update nodes/edges using regular javascript, as we know
-          precisely when change happens and what is changed.
+          Note: I wish I could entirely use vue template to set the UI.
+          Unfortunately this produces choppy layout. So I set most of the static
+          components with vue, and update positions from javascript.
         -->
         <g ref='linksContainer'>
-          <!-- path v-for='edge in edges'
+          <path v-for='edge in edges'
             stroke='#999'
             :data-from='edge.fromId'
             :data-to='edge.toId'
-            :d='computeLinkPath(edge)'
-            marker-end='url(#Triangle)'></path-->
+            marker-end='url(#Triangle)'></path>
         </g>
         <g ref='nodeContainer'>
-          <!--image v-for='node in nodes'
-            width='60' height='45'
+          <image v-for='node in nodes'
+            :width='node.width' :height='node.height'
             class='video-thumbnail'
             :data-id='node.id'
-            :xlink:href='node.data.imageUrl'
-            :x='node.pos.x - 30' :y='node.pos.y - 22.5' /-->
+            :xlink:href='node.data.image.url' />
         </g>
       </g>
       <defs>
@@ -43,7 +40,6 @@
 <script>
 import panZoom from 'panzoom';
 import createLayout from 'ngraph.forcelayout';
-import sivg from 'simplesvg';
 
 import { getFromTo } from '../lib/geom.js';
 import clap from '../lib/clap.js';
@@ -75,7 +71,7 @@ export default {
 
   mounted() {
     const { scene } = this.$refs;
-    this.zoomHandle = panZoom(scene, { bounds: true });
+    this.zoomHandle = panZoom(scene);
     const rect = this.$el.getBoundingClientRect();
     this.zoomHandle.moveTo(rect.width / 2, rect.height / 2);
     this.initEvents(scene);
@@ -136,45 +132,26 @@ export default {
       const { id, data } = graphNode;
       const pos = this.layout.getNodePosition(id);
 
-      const ui = sivg('image', {
-        width: '60',
-        height: '45',
-        class: 'video-thumbnail',
-        'data-id': id,
-        x: pos.x - 30,
-        y: pos.y - 22.5
+      this.nodes.push({
+        pos,
+        id,
+        data,
+        width: data.width,
+        height: data.height
       });
-      ui.link(data.imageUrl);
-
-      this.$refs.nodeContainer.appendChild(ui);
-
-      this.nodes.push({ ui, pos, id, data });
     },
 
     addLink(graphLink) {
       const { id, fromId, toId } = graphLink;
       const pos = this.layout.getLinkPosition(id);
-
-
-      const uiParent = this.$refs.linksContainer;
-      const ui = sivg('path', {
-        stroke: '#999',
-        'data-from': fromId,
-        'data-to': toId,
-        d: computeLinkPath(pos),
-        'marker-end': 'url(#Triangle)'
-      });
-
-      this.edges.push({ pos, fromId, toId, ui });
-
-      uiParent.appendChild(ui);
+      const fromHeight = this.graph.getNode(fromId).data.height;
+      const toHeight = this.graph.getNode(toId).data.height;
+      this.edges.push({ pos, fromId, toId, fromHeight, toHeight });
     },
 
     disposeGraph() {
       if (this.graph) {
         this.graph.off('changed', this.onGraphChanged, this);
-        disposeUI(this.nodes);
-        disposeUI(this.edges);
         this.nodes = [];
         this.edges = [];
       }
@@ -230,15 +207,26 @@ export default {
 
       this.layout.step();
       this.edges.forEach(edge => {
-        edge.ui.attr('d', computeLinkPath(edge.pos));
+        let ui = edge.ui;
+        if (!ui) {
+          ui = this.$refs.linksContainer.querySelector(`path[data-from="${edge.fromId}"][data-to="${edge.toId}"]`);
+          edge.ui = ui;
+        }
+        if (ui) ui.setAttributeNS(null, 'd', computeLinkPath(edge.pos, edge.fromHeight, edge.toHeight));
       });
 
       this.nodes.forEach(node => {
-        node.ui.attr({
-          x: node.pos.x - 30,
-          y: node.pos.y - 22.5
-        });
+        let ui = node.ui;
+        if (!ui) {
+          ui = this.$refs.nodeContainer.querySelector(`[data-id="${node.id}"]`);
+          node.ui = ui;
+        }
+        if (ui) {
+          ui.setAttributeNS(null, 'x', node.pos.x - node.width / 2);
+          ui.setAttributeNS(null, 'y', node.pos.y - node.height / 2);
+        }
       });
+
       this.iterations += 1;
       if (this.layout.lastMove > 20 || this.iterations < 100) {
         // we assume we are note converged yet.
@@ -258,17 +246,8 @@ export default {
   }
 };
 
-
-function disposeUI(uiCollection) {
-  if (!uiCollection) return;
-  uiCollection.forEach(model => {
-    const { parentElement } = model.ui;
-    if (parentElement) parentElement.removeChild(model.ui);
-  });
-}
-
-function computeLinkPath(edge) {
-  const { from, to } = getFromTo(edge);
+function computeLinkPath(edge, fromHeight, toHeight) {
+  const { from, to } = getFromTo(edge, fromHeight, toHeight);
   let data = 'M';
 
   data += Math.round(from.x) + ',' + Math.round(from.y);
