@@ -159,7 +159,7 @@ export function buildYouTubeVideoGraph(searchTerm) {
 
     if (!link || !root) return;
 
-    graph.addLink(linkId, rootId);
+    graph.addLink(rootId, linkId);
   }
 }
 

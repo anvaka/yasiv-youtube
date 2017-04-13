@@ -33,6 +33,8 @@ module.exports = {
     'no-use-before-define': 0,
     'no-console': 0,
     'no-bitwise': 0,
+    'no-unreachable': 1,
+    'no-useless-return': 0,
     'no-shadow': 0,
     'no-multi-assign': 0,
     'no-plusplus': 0,
