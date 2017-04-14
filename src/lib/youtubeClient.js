@@ -3,6 +3,8 @@
  */
 import httpGet from './restClient.js';
 
+// The key is bound to my domains, if you want to use this in your
+// code base, please use your own key: https://developers.google.com/youtube/v3/docs/
 const key = 'AIzaSyAb3ea-42-gpQf0-p9XdHbY30jI4ntqPNI';
 const origin = 'https://www.googleapis.com/youtube/v3/';
 
