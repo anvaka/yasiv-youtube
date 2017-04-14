@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <graph-view class='visualization' :graph='currentGraph' @selected='onVideoSelected'></graph-view>
+    <graph-view class='visualization' :graph='currentGraph' @selected='onVideoSelected' @loadMore='onLoadMore'></graph-view>
     <form id='searchForm' @submit.prevent='searchFormSubmitHandler'>
         <input type='text' id='searchString' placeholder='Enter YouTube search query' autofocus v-model='searchString'/>
         <input type='submit' id='startSearch' title='Start visualization' value='Show Graph' />
@@ -9,7 +9,7 @@
     <div class='log-message' v-if='logMessage'>{{logMessage}}</div>
     <video-preview :videoId='selectedVideo' @close='closeVideo' @ended='playNext'></video-preview>
     <div class='footer'>
-        <a @click.prevent='showAbout = true' class='about-link'>About</a>
+        <a @click.prevent='showAbout = !showAbout' class='about-link'>About</a>
     </div>
     <div id='copyText'>Made with <span class='heart'>♥</span> by Andrei Kashcha</div>
 
@@ -111,7 +111,14 @@ export default {
     },
 
     onVideoSelected(videoId) {
+      this.showAbout = false;
       this.selectedVideo = videoId;
+    },
+
+    onLoadMore(videoId) {
+      if (this.request) {
+        this.request.loadMore(videoId);
+      }
     },
 
     onQueryChange() {

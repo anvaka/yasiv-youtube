@@ -93,7 +93,12 @@ export default {
 
     handleMouseClick(e) {
       const nodeId = getNodeIdFromDOM(e.target);
-      if (nodeId) this.$emit('selected', nodeId);
+      if (!nodeId) return;
+      if (e.shiftKey) {
+        this.$emit('loadMore', nodeId);
+      } else {
+        this.$emit('selected', nodeId);
+      }
     },
 
     showTooltip(el, text) {

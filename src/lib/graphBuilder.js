@@ -1,5 +1,5 @@
 /**
- * This file builds a graph of YouTubue videos for a given search term.
+ * This file builds a graph of YouTube videos for a given search term.
  */
 import createGraph from 'ngraph.graph';
 
@@ -15,6 +15,10 @@ export function buildYouTubeVideoGraph(searchTerm) {
   const graph = createGraph({ uniqueLinkIds: false });
   const progress = new ProgressToken();
 
+  // Save videos with processed related videos, s o that `loadMore` doesn't
+  // do anythign for them.
+  const loadedVideos = new Set();
+
   searchVideos(searchTerm, (result) => {
     onSearchVideoComplete(result.items && result.items[0], progress);
   }, () => { // error
@@ -25,8 +29,50 @@ export function buildYouTubeVideoGraph(searchTerm) {
     // The progress tells consumers about current status of the graph
     progress,
     // The graph is updated as we discover new vides.
-    graph
+    graph,
+
+    // Load more videos for a given videoId
+    loadMore
   };
+
+  function loadMore(videoId) {
+    // TODO: This code seem to be duplicated. Consider refactoring it.
+    if (loadedVideos.has(videoId)) return;
+
+    findRelatedVideos(videoId, similarPerRequest, (r) => {
+      loadedVideos.add(videoId);
+
+      if (progress.isCanceled()) {
+        return;
+      }
+
+      const result = r.items;
+
+      graph.beginUpdate();
+
+      for (let i = 0; i < result.length; ++i) {
+        const similar = result[i];
+        const similarId = getVideoId(similar);
+        let hasNode = graph.getNode(similarId);
+
+        if (!hasNode && i < similarPerNode) {
+          addNodeToGraph(similarId, similar);
+          hasNode = similar;
+        }
+
+        // The node could be in the graph, but it's not among first top similarPerNode
+        // nodes. Nevertheless, we track such relationship and display a link.
+        if (!graph.hasLink(videoId, similarId) && hasNode) {
+          addLinkToGraphFiltered(similarId, videoId);
+        }
+      }
+
+      graph.endUpdate();
+      progress.complete('');
+    }, () => { // Error handler
+      progress.update('Could not find related videos for one video.');
+    });
+  }
 
   function onSearchVideoComplete(video, progress) {
     if (progress.isCanceled()) {
@@ -39,9 +85,12 @@ export function buildYouTubeVideoGraph(searchTerm) {
       root = video;
       root.isPinned = true;
       root.isRoot = true;
-      addNodeToGraph(getVideoId(root), root);
+      const videoId = getVideoId(root);
+      addNodeToGraph(videoId, root);
 
-      findRelatedVideos(root, 10, (r) => {
+      findRelatedVideos(videoId, 10, (r) => {
+        loadedVideos.add(videoId);
+
         onRelatedToRootFound(r, progress);
       }, () => {
         // TODO: this is error handling code. Could probably provide better
@@ -96,14 +145,15 @@ export function buildYouTubeVideoGraph(searchTerm) {
       return;
     }
 
-    findRelatedVideos(item, similarPerRequest, (r) => {
+    const videoId = getVideoId(item);
+    findRelatedVideos(videoId, similarPerRequest, (r) => {
+      loadedVideos.add(videoId);
+
       if (progress.isCanceled()) {
         return;
       }
 
       const result = r.items;
-      const rootId = getVideoId(item);
-
       graph.beginUpdate();
 
       for (let i = 0; i < result.length; ++i) {
@@ -120,8 +170,8 @@ export function buildYouTubeVideoGraph(searchTerm) {
 
         // The node could be in the graph, but it's not among first top similarPerNode
         // nodes. Nevertheless, we track such relationship and display a link.
-        if (!graph.hasLink(similarId, rootId) && hasNode) {
-          addLinkToGraphFiltered(similarId, rootId);
+        if (!graph.hasLink(videoId, similarId) && hasNode) {
+          addLinkToGraphFiltered(similarId, videoId);
         }
       }
 

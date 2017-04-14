@@ -46,10 +46,10 @@ export function searchVideos(query, callback, error, extra) {
   return makeRequest(args, callback, error);
 }
 
-export function findRelatedVideos(video, maxResults, callback, error) {
+export function findRelatedVideos(videoId, maxResults, callback, error) {
   return makeRequest({
     part: 'snippet',
     maxResults: (typeof maxResults === 'number' ? maxResults : 10),
-    relatedToVideoId: video.id.videoId
+    relatedToVideoId: videoId
   }, callback, error);
 }
