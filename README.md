@@ -2,7 +2,7 @@
 
 This is a very simple project, that renders graph of related YouTube videos:
 
-![yasiv-youtube](http://i.imgur.com/c4JaAPn.gif)
+[![yasiv-youtube](http://i.imgur.com/c4JaAPn.gif)](https://yasiv.com/youtube)
 
 It's built on top of:
 * [ngraph.graph](https://github.com/anvaka/ngraph.graph) - to store graph
