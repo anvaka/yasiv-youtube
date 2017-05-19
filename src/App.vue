@@ -48,7 +48,7 @@ export default {
     const searchString = qs.get('q') || '';
     // by default we always want to auto focus search input field,
     // however when our website is embedded into iframe, autofocusing would
-    // cause stealing of the focus.
+    // cause stealing of the view (the page will scroll it into view).
     let autofocus = true;
     // So, if we are embedded into an iframe, we don't want to autofocus
     const isInIFrame = window.self !== window.top;
