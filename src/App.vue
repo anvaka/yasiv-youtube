@@ -2,7 +2,7 @@
   <div id="app">
     <graph-view class='visualization' :graph='currentGraph' @selected='onVideoSelected' @loadMore='onLoadMore'></graph-view>
     <form id='searchForm' @submit.prevent='searchFormSubmitHandler'>
-        <input type='text' id='searchString' placeholder='Enter YouTube search query' autofocus v-model='searchString'/>
+        <input type='text' id='searchString' placeholder='Enter YouTube search query' :autofocus='autofocus' v-model='searchString'/>
         <input type='submit' id='startSearch' title='Start visualization' value='Show Graph' />
     </form>
 
@@ -46,10 +46,24 @@ export default {
   name: 'app',
   data() {
     const searchString = qs.get('q') || '';
+    // by default we always want to auto focus search input field,
+    // however when our website is embedded into iframe, autofocusing would
+    // cause stealing of the focus.
+    let autofocus = true;
+    // So, if we are embedded into an iframe, we don't want to autofocus
+    const isInIFrame = window.self !== window.top;
+    if (isInIFrame) autofocus = false;
+    // but what if someone still wants to have both iFrame and autofocus?
+    // They can pass this intent in the query string as #...&autofocus=1
+    const autofocusOverride = qs.get('autofocus');
+    if (autofocusOverride !== undefined) {
+      autofocus = !!autofocusOverride;
+    }
 
     return {
       request: null,
       logMessage: 'Hello',
+      autofocus,
       searchString,
       showAbout: searchString.length === 0,
       selectedVideo: null,
