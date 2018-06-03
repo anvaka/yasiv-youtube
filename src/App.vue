@@ -182,7 +182,7 @@ body {
   overflow: hidden;
   position: absolute;
 
-  /* font info has to be applied to body so it applies to mouseovers and date picker */
+  /* font info has to be applied to body so it applies to mouse overs and date picker */
   font-family: Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

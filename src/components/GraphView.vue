@@ -83,7 +83,7 @@ export default {
       const nodeId = getNodeIdFromDOM(e.target);
       if (!nodeId) return;
 
-      this.clearHighligh();
+      this.clearHighlight();
 
       forAll(this.$refs.scene, `path[data-from="${nodeId}"], path[data-to="${nodeId}"]`, addClass('hl'));
 
@@ -111,11 +111,11 @@ export default {
     },
 
     handleMouseLeave() {
-      this.clearHighligh();
+      this.clearHighlight();
       this.tooltip.visible = false;
     },
 
-    clearHighligh() {
+    clearHighlight() {
       forAll(this.$refs.scene, '.hl', removeClass('hl'));
     },
 
