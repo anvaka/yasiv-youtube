@@ -72,7 +72,6 @@ export default {
 
   created() {
     qs.onChange(this.onQueryChange, this);
-    this.startSearch();
   },
 
   computed: {
